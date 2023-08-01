@@ -11,6 +11,7 @@ const UserSchema = new mongoose.Schema({
   email: { type: String, unique: true, required: true },
   team: { type: [Types.ObjectId], default: [] },
   rols: { type: [String], default: ["USERS"] },
+  token: { type: String, default: "" },
 });
 
 const UserModle = model("user", UserSchema);

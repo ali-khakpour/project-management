@@ -1,5 +1,5 @@
 const { validationResult } = require("express-validator");
-const { hashPassword } = require("../../modules/hashPassword");
+const { hashPassword, singToken } = require("../../modules/hashPassword");
 const { UserModle } = require("../../models/user");
 
 class AuthController {
@@ -18,8 +18,25 @@ class AuthController {
       next();
     }
   }
-  login() {}
-  resetPassword() {}
+
+  async login(req, res, next) {
+    try {
+      const { password, username } = req.body;
+      const user = await UserModle.findOne({ username })
+      const token = singToken({ username })
+      user.token = token;
+      await user.save()
+      res.status(200).json({
+        statusCode: res.statusCode,
+        message: "ورود موفقیت آمیز",
+        token,
+      })
+    } catch (error) {
+      console.log(error + "32");
+      next(error)
+    }
+  }
+  resetPassword() { }
 }
 
 module.exports = { AuthController: new AuthController() };

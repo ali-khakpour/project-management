@@ -1,5 +1,6 @@
 const { body } = require("express-validator");
 const { UserModle } = require("../../models/user");
+const { verifyPassword } = require("../../modules/hashPassword");
 
 function registerValidator() {
   return [
@@ -47,4 +48,32 @@ function registerValidator() {
   ];
 }
 
-module.exports = registerValidator;
+function loginValidator() {
+  return [
+    body("username").notEmpty().withMessage("نام کاربری نمی تواند خالی باشد")
+      .custom(async (value, ext) => {
+        if (value) {
+            const user = await UserModle.findOne({username: value})
+            console.log(user);
+            if(!user) throw "نام کاربری یا رمز عبور اشتباه است"
+            return true;
+          } else {
+            throw "نام کاربری صحیح نمی باشد";
+          }
+        
+      }),
+
+    body("password")
+      .notEmpty()
+      .withMessage("رمز بین 8 تا 16 نویسه باشد")
+      .custom( async (value, ctx) => {
+        if (!value) throw "رمز نمیتواند خالی باشد";
+        const hashed = await UserModle.findOne({username: ctx.req.body.username})
+        const verify = verifyPassword(value, hashed.password )
+        if (!verify) throw {status : 401, message : "نام کاربری یا رمز ورود اشتباه است"};
+        return true
+      }),
+  ];
+}
+
+module.exports = {registerValidator, loginValidator};
